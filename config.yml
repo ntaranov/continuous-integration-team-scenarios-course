@@ -1,0 +1,446 @@
+title: Common Continuous Integration Team Scenarios
+description: >-
+  The course guides participants through situations commonly encountered when
+  integrating continuously as a team.
+tags:
+  - CI
+  - Continuous Integration
+  - Git
+  - DevOps
+  - Team Work
+template:
+  repo: continuous-integration-team-scenarios-template
+  name: continuous-integration-team-scenarios
+before:
+  - type: updateBranchProtection
+
+  - type: createIssue
+    title: Welcome!
+    body: 00_first_issue.md
+    data:
+      repositoryUrl: '{{ payload.repository.html_url }}'
+      repositoryName: '{{ payload.repository.name }}'
+      firstBranchName: feature-steps
+      firstCommitMessage: Add first CI steps
+      prTitle: Steps review
+    store:
+      prTitle: Steps review
+      firstBranchName: feature-steps
+      firstIssueTitle: Welcome!
+      first_issue_url: "{{ result.data.html_url }}"
+      remarkBranchName: bugfix-remark
+      remarkPrName: Adding a remark
+      repositoryUrl: '{{ payload.repository.html_url }}'
+      featureFixPrTitle: Fixing the feature
+      featureFixBranchName: feature-steps-fix
+steps:
+  # STEP 1
+  - title: Start working
+    description: Author and push the first part and create a pull request
+    event: push
+    link: '{{ repoUrl }}/issues/1'
+    actions:
+      - type: gate
+        left: '{{ payload.ref }}'
+        operator: ===
+        right: "refs/heads/{{ store.firstBranchName }}"
+        else:
+          type: respond
+          issue: 1
+          with: 01_e_create_branch.md
+          data:
+            firstBranchName: "{{ store.firstBranchName }}"
+
+      - type: respond
+        with: 01_branch_created.md
+        issue: 1
+        data:
+          prTitle: "{{ store.prTitle }}"
+          firstBranchName: "{{ store.firstBranchName }}"
+          createPrUrl: "{{ payload.repository.html_url }}/compare/master...{{ store.firstBranchName }}?expand=1"
+  
+  # STEP 2
+  - title: Pull request as code review
+    description: Receiving feedback from tests in pull request
+    event:
+      - pull_request.opened
+      - pull_request.synchronize
+      - pull_request.edited
+    link: '{{ store.first_issue_url }}'
+    actions:
+      - type: getPullRequest
+        action_id: pr1
+        waitForMergeable: true
+
+      - type: gate
+        gates:
+          - left: "{{ payload.pull_request.head.ref }}"
+            operator: ===
+            right: "{{ store.firstBranchName }}"
+          - left: "{{ payload.pull_request.base.ref }}"
+            operator: ===
+            right: master
+          - left: "{{ payload.pull_request.title }}"
+            operator: ===
+            right: "{{ store.prTitle }}"
+        every: true
+        else:
+          - type: respond
+            with: e_pr_name_branches.md
+            data:
+              branchName: "{{ store.firstBranchName }}"
+              prTitle: "{{ store.prTitle }}"
+        store:
+          prId:  "{{ payload.pull_request.number }}"
+          prUrl: "{{ store.repositoryUrl }}/pull/{{ payload.pull_request.number }}"
+
+      - type: respond
+        issue: 1
+        with: pr_created.md
+        data:
+          branchName: "{{ store.firstBranchName }}"
+          prTitle: "{{ store.prTitle }}"
+          prUrl: "{{ store.prUrl }}"
+
+      - type: respond
+        with: 02_pull_request.md
+
+  # STEP 3: 
+  - title: A priority change to mainline is requested
+    description: Implement the change and start the review
+    event: check_suite.completed
+    link: '{{ store.prUrl }}'
+    actions:
+      - type: gate
+        gates:
+          - left: "{{ payload.check_suite.app.slug }}"
+            operator: ===
+            right: github-actions
+          - left: "{{ payload.check_suite.conclusion }}"
+            operator: ===
+            right: success
+        
+      - type: createIssue
+        title: Add remark about the CI steps being opinionated
+        body: 03_remark_issue.md
+        data:
+          createPrUrl: "{{ payload.repository.html_url }}/compare/master...{{ store.remarkBranchName }}?expand=1"
+          remarkBranchName: "{{ store.remarkBranchName }}"
+          remarkPrName: "{{ store.remarkPrName }}"
+        store:
+          remarkIssueUrl: "{{ result.data.html_url }}"
+          remarkIssueTitle: Add remark about the CI steps being opinionated
+
+      - type: respond
+        issue: '{{ store.prTitle }}'
+        with: 03_remark_issue_created.md
+        data:
+          remarkBranchName: "{{ store.remarkBranchName }}"
+          remarkIssueUrl: "{{ store.remarkIssueUrl }}"
+
+  # STEP 4
+  - title: Implement the changes and start the review
+    description: Author, commit and push the requested changes, open a pull request
+    event:
+      - pull_request.opened
+      - pull_request.synchronize
+      - pull_request.edited
+    link: '{{ store.remarkIssueUrl }}'
+    actions:
+      - type: getPullRequest
+        waitForMergeable: true
+        store:
+          remarkPrUrl: '{{ store.repositoryUrl }}/pull/{{ result.data.number }}'
+
+      - type: gate
+        gates:
+          - left: "{{ payload.pull_request.head.ref }}"
+            operator: ===
+            right: "{{ store.remarkBranchName }}"
+          - left: "{{ payload.pull_request.base.ref }}"
+            operator: ===
+            right: master
+          - left: "{{ payload.pull_request.title }}"
+            operator: ===
+            right: "{{ store.remarkPrName }}"
+        every: true
+        else:
+          - type: respond
+            with: 04_e_remark_pr_name_branches.md
+            data:
+              remarkBranchName: "{{ store.remarkBranchName }}"
+              remarkPrName: "{{ store.remarkPrName }}"
+
+      - type: respond
+        issue: '{{ store.remarkIssueTitle }}'
+        with: pr_created.md
+        data:
+          branchName: "{{ store.remarkBranchName }}"
+          prTitle: "{{ store.remarkPrName }}"
+          prUrl: "{{ store.remarkPrUrl }}"
+      
+      - type: createReview
+        body: merge_pr.md
+        event: APPROVE
+        
+  # STEP 5
+  - title: Merge the changes to mainline
+    description: Merge the pull request
+    event: pull_request.closed
+    link: '{{ store.remarkPrUrl }}'
+    actions:
+      - type: gate
+        gates:
+          - left: "{{ payload.pull_request.title }}"
+            operator: ===
+            right: "{{ store.remarkPrName }}"
+          - left: '{{ payload.pull_request.merged }}'
+
+      - type: respond
+        with: 05_remark_pr_merged.md
+        data:
+          prUrl: "{{ store.prUrl }}"
+
+      - type: respond
+        issue: '{{ store.prTitle }}'
+        with: 05_continue_working.md
+        data:
+          firstBranchName: "{{ store.firstBranchName }}"
+
+      - type: closeIssue
+        issue: '{{ store.remarkIssueTitle }}'
+
+  # STEP 6
+  - title: Continue working
+    description: Author new work and push it to the feature branch
+    event: push
+    link: '{{ store.prUrl }}'
+    actions:
+      - type: gate
+        left: '{{ payload.ref }}'
+        operator: ===
+        right: "refs/heads/{{ store.firstBranchName }}"
+        else:
+          type: respond
+          issue: '{{ store.prTitle }}'
+          with: 06_e_push_to_branch.md
+          data:
+            firstBranchName: "{{ store.firstBranchName }}"
+
+      - type: respond
+        with: 06_merge_conflict.md
+        issue: '{{ store.prTitle }}'
+        data:
+          remarkBranchName: "{{ store.remarkBranchName }}"
+          firstBranchName: "{{ store.firstBranchName }}"
+
+  # STEP 7
+  - title: Resolve the merge conflict
+    description: Make sure tests pass on the merge result
+    event: check_suite.completed
+    link: '{{ store.prUrl }}'
+    actions:
+
+      - type: gate
+        gates:
+          - left: "{{ payload.check_suite.app.slug }}"
+            operator: ===
+            right: github-actions
+          - left: "{{ payload.check_suite.conclusion }}"
+            operator: ===
+            right: success
+
+      - type: createReview
+        body: 07_good_job.md
+        event: APPROVE
+        pullRequest: '{{ store.prTitle }}'
+
+  # STEP 8
+  - title: Merge feature to master
+    description: Merge the feature branch
+    event: pull_request.closed
+    link: '{{ store.prUrl }}'
+    actions:
+      - type: gate
+        left: '{{ payload.pull_request.merged }}'
+
+      - type: closeIssue
+        issue: '{{ store.firstIssueTitle }}'
+
+      - type: createIssue
+        title: A bug happened in production
+        body: 08_bug_issue.md
+        data:
+          prUrl: "{{ store.prUrl }}"
+          prTitle: "{{ store.prTitle }}"
+        store:
+          bugIssueTitle: A bug happened in production
+          bugIssueUrl: "{{ result.data.html_url }}"
+
+      - type: respond
+        with: 08_bug_issue_created.md
+        issue: '{{ store.prTitle }}'
+        data:
+          bugIssueUrl: "{{ store.bugIssueUrl }}"
+      - type: removeBranchProtection
+        required: false
+
+  # STEP 9
+  - title: Reverting a bug in mainline
+    description: Revert the feature merge commit
+    event: push
+    link: '{{ store.bugIssueUrl }}'
+    actions:
+      - type: gate
+        left: '{{ payload.ref }}'
+        operator: ===
+        right: "refs/heads/master"
+        else:
+          type: respond
+          issue: "{{ store.bugIssueTitle }}"
+          with: 09_e_revert_master.md
+          data:
+            firstBranchName: "{{ store.firstBranchName }}"
+
+      - type: getFileContents
+        filename: ci.md
+        action_id: contents
+      - type: gate
+        left: '/.*sneaky\s+bug.*/gi'
+        operator: '!test'
+        right: '{{ actions.contents }}'
+        else:
+          type: respond
+          issue: "{{ store.bugIssueTitle }}"
+          with: 09_e_no_fix.md
+          data:
+            firstBranchName: "{{ store.firstBranchName }}"
+
+      - type: updateBranchProtection
+
+      - type: respond
+        issue: "{{ store.bugIssueTitle }}"
+        # add a link to pull request creation page
+        with: 09_fix_bug.md
+        data:
+          firstBranchName: "{{ store.firstBranchName }}"
+          featureFixPrTitle: "{{ store.featureFixPrTitle }}"
+          featureFixBranchName: "{{ store.featureFixBranchName }}"
+
+  # STEP 10
+  - title: Implement the fix
+    description: Bring feature code back and add the fix on top of it
+    event: push
+    link: '{{ store.bugIssueUrl }}'
+    actions:
+      - type: gate
+        left: '{{ payload.ref }}'
+        operator: ===
+        right: "refs/heads/{{ store.featureFixBranchName }}"
+        else:
+          type: respond
+          issue: "{{ store.bugIssueTitle }}"
+          with: 10_e_create_branch.md
+          data:
+            featureFixBranchName: "{{ store.featureFixBranchName }}"
+
+      - type: respond
+        issue: "{{ store.bugIssueTitle }}"
+        with: 10_create_pull_request.md
+        data:
+          createPrUrl: "{{ payload.repository.html_url }}/compare/master...{{ store.featureFixBranchName }}?expand=1"
+          branchName: "{{ store.featureFixBranchName }}"
+          prTitle: "{{ store.featureFixPrTitle }}"
+
+  # STEP 11
+  - title: Start the fix review
+    description: Open pull request to return the feature code to master
+    event:
+      - pull_request.opened
+      - pull_request.synchronize
+      - pull_request.edited
+    link: '{{ store.bugIssueUrl }}'
+    actions:
+      - type: getPullRequest
+        action_id: prFeatureFix
+        waitForMergeable: true
+      - type: gate
+        gates:
+          - left: "{{ payload.pull_request.head.ref }}"
+            operator: ===
+            right: "{{ store.featureFixBranchName }}"
+          - left: "{{ payload.pull_request.base.ref }}"
+            operator: ===
+            right: master
+          - left: "{{ payload.pull_request.title }}"
+            operator: ===
+            right: "{{ store.featureFixPrTitle }}"
+        every: true
+        else:
+          - type: respond
+            with: e_pr_name_branches.md
+            data:
+              branchName: "{{ store.featureFixBranchName }}"
+              prTitle: "{{ store.featureFixPrTitle }}"
+        store:
+          featureFixPrId:  "{{ payload.pull_request.number }}"
+          featureFixPrUrl: "{{ store.repositoryUrl }}/pull/{{ payload.pull_request.number }}"
+
+      - type: respond
+        with: 11_pull_request.md
+
+      - type: respond
+        issue: '{{ store.bugIssueTitle }}'
+        with: pr_created.md
+        data:
+          branchName: "{{ store.featureFixBranchName }}"
+          prTitle: "{{ store.featureFixPrTitle }}"
+          prUrl: "{{ store.featureFixPrUrl }}"
+
+  # STEP 12
+  - title: Review the fix
+    description: Make sure tests pass for the fix
+    event: check_suite.completed
+    link: '{{ store.featureFixPrUrl }}'
+    actions:
+
+      - type: gate
+        gates:
+          - left: "{{ payload.check_suite.app.slug }}"
+            operator: ===
+            right: github-actions
+          - left: "{{ payload.check_suite.conclusion }}"
+            operator: ===
+            right: success
+        every: true
+        else:
+          - type: respond
+            issue: "{{ store.featureFixPrTitle }}"
+            with: e_tests_fail.md
+
+      - type: createReview
+        body: merge_pr.md
+        event: APPROVE
+        pullRequest: "{{ store.featureFixPrTitle }}"
+
+  # STEP 13
+  - title: Returning the fixed code to mainline
+    description: Merge the fix to master
+    event: pull_request.closed
+    link: '{{ store.featureFixPrUrl }}'
+    actions:
+      - type: gate
+        gates:
+          - left: "{{ payload.pull_request.title }}"
+            operator: ===
+            right: "{{ store.featureFixPrTitle }}"
+          - left: '{{ payload.pull_request.merged }}'
+
+      - type: closeIssue
+        issue: '{{ store.bugIssueTitle }}'
+
+      - type: respond
+        with: 12_congrats.md
+
+
+

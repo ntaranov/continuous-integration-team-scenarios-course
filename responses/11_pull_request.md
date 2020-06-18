@@ -1,0 +1,1 @@
+Please, wait until the tests finish running. You can see the status of the tests at the bottom of the PR discussion thread. I'll give further instructions in a comment when the tests are done. You might need to refresh the page to see the comment.

@@ -1,0 +1,1 @@
+Thank you for merging the pull request. Please follow the [link]({{ prUrl }}) to continue the course.
