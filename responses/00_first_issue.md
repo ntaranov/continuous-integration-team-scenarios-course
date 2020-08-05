@@ -56,7 +56,7 @@ If you are happy with the result, eventually you might want to push the remote. 
 git push --force origin master
 ```
 
-Please, note that we use `git push --force`. You will rarely ever want to force push to a remote's master, but here we have very specific scenario with only one collaborator who know what he is doing.
+Please, note that we use `git push --force`. You will rarely ever want to force push to a remote's master, but here we have very specific scenario with only one collaborator who knows what he is doing.
 </details>
 
 ## What is Continuous Integration, really?
@@ -64,7 +64,7 @@ Please, note that we use `git push --force`. You will rarely ever want to force 
 **Continuous integration**, or CI, is a technical practice when each member of a team integrates their code at least once a day so that the resulting code at least builds without errors.
 
 <details><summary>There are various interpretations of the term.</summary>
-One point of disagreement is the frequency of integration. Some argue that integrating just once a day is not enough to actually integrate continuously. One counterexample is when everybody get fresh code once in the morning and integrate once in the evening. Though the argument stands, it's mostly considered that "once a day" definition is practical enough, it's concrete and is good for teams of different sizes.  
+One point of disagreement is the frequency of integration. Some argue that integrating just once a day is not enough to actually integrate continuously. A counterexample is when everybody gets fresh code once in the morning and integrates once in the evening. Though the argument stands, it's mostly considered that "once a day" definition is practical enough, it's concrete and is good for teams of different sizes.  
   
 Another point is that C++ in not the only language used in development for a long time, and just building without errors is a very weak validation requirement. Some set of tests (e.g. unit tests run on a local computer) should be required to pass. Currently, community seems to gravitate towards such requirement, and in the future "build + units tests" will likely be the mainstream, if not already.
 </details>
