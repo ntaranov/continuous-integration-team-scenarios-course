@@ -4,6 +4,10 @@ You learned Git commands but sometimes not sure how real-world Continuous Integr
 
 ## What you'll do
 
+Here is a GIF showing commits in your repository as you will go through the course. As you see, nothing is complicated and everything is essential.
+
+![Continuous Integration Steps](https://raw.githubusercontent.com/ntaranov/continuous-integration-team-scenarios-course/master/flow.gif)
+
 You'll go through these common CI scenarios:
 - Working on a feature;
 - Using auto tests to ensure quality;
