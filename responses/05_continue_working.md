@@ -20,7 +20,7 @@ Because not passing tests are usually displayed in red, and passing displayed in
 
 </details>
 
-After letting the tests fail attempting to commit them, add and commit the actual checklist text. You will see that tests are passing ("green").
+First try to commit the tests and let them fail, then add and commit the actual checklist text. You will see that tests are passing ("green").
 Then, push the new code to the remote and see how tests are run in the pull request and the pull request's status is updated.
 
 
