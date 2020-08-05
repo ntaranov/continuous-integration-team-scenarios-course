@@ -1,7 +1,6 @@
 This course will give you practical skills of doing Continuous Integration (CI) in a GitHub-based repository.  
 
-
-During the course, you'll practice common continuous integration actions. The course isn't intended to be a click-through wizard-style experience, instead you'll do what developers do during their daily work the way they do it. I'll explain the theory as you reach relevant steps.
+You learned Git commands but sometimes not sure how real-world Continuous Integration is done? Or maybe you already doing it but want to understand the theory better to fine-tune your everyday actions? This course will help. During the course, you'll practice common continuous integration actions. It isn't intended to be a click-through wizard-style experience, instead you'll do what developers do during their daily work the way they do it. I'll explain the theory as you reach relevant steps.
 
 ## What you'll do
 
