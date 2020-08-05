@@ -4,9 +4,9 @@ During the course, you'll practice common continuous integration actions. The co
 
 ## What are we going to do?
 
-We'll also use some simple test suite to mimic actual CI process.  
-
 As we progress, we will incrementally build a memo with a common CI steps sequence, which is a great way to memorize it. In other words, we will make  the list of actions which developers take doing CI doing CI. You can always see [current list]({{ repositoryUrl }}/blob/master/ci.md) using the GitHub's ability to render Markdown.
+
+We'll also use some simple test suite to mimic actual CI process.  
 
 To complete the course you will need [Node.js](https://nodejs.org/) and a [Git client](https://git-scm.com/downloads) installed. You can use whatever Git client you prefer, but I will provide reference solutions for command line only.
 <details><summary>Make sure, you have a command line client. Click here for more details.</summary>
