@@ -32,4 +32,7 @@ Please, wait until the tests finish running. You can see the status of the tests
 - Wait a couple of minutes;
 - Refresh the page;
 - Re-launch the checks with GitHub UI under the **Actions** tab.
+
+If the checks don't run and you cannot re-launch them manually because you don't see any workflows under the **Actions** tab, you might have forgotten to enable GitHub actions for the repository. If this is the case, the only way to complete the course for you at this moment is to start the course from the beginning. You can delete the course repository and join the course again to achieve this.  
+
 </details>

@@ -85,7 +85,7 @@ Continuous integration is different from continuous deployment or continuous del
 
 ## Before you begin
 
-Make sure that [GitHub actions]({{ repositoryUrl }}/actions) are enabled for the course repository. If actions are not enabled, please enable them clicking the button in middle of the screen under the Actions GitHub UI tab. The course will not work properly if done without GitHub actions enabled.
+Make sure that [GitHub actions]({{ repositoryUrl }}/actions) are enabled for the course repository. If actions are not enabled, please enable them clicking the button in middle of the screen under the Actions GitHub UI tab. If they are not enabled, automatic tests will not run in pull requests, and you will not be able to complete the course.  
 
 ![Enable Github Actions for the repository](https://raw.githubusercontent.com/ntaranov/continuous-integration-team-scenarios-course/master/actions.png)
 
@@ -211,7 +211,8 @@ Let's now publish our work.
 
 ### ⌨️ Activity
 
-- Push the changes to the remote branch with the same name as our working branch
+- Please, check that [GitHub actions]({{ repositoryUrl }}/actions) are enabled as this is the last chance to enable them.  
+- Push the changes to the remote branch with the same name as our working branch.
 
 <details><summary>Show the commands...</summary>
 
