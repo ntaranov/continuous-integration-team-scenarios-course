@@ -149,8 +149,6 @@ steps:
     actions:
       - type: getPullRequest
         waitForMergeable: true
-        store:
-          remarkPrUrl: '{{ store.repositoryUrl }}/pull/{{ result.data.number }}'
 
       - type: gate
         gates:
@@ -170,6 +168,8 @@ steps:
             data:
               remarkBranchName: "{{ store.remarkBranchName }}"
               remarkPrName: "{{ store.remarkPrName }}"
+        store:
+          remarkPrUrl: '{{ store.repositoryUrl }}/pull/{{ result.data.number }}'
 
       - type: respond
         issue: '{{ store.remarkIssueTitle }}'
